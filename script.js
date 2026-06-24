@@ -86,6 +86,7 @@ fadeElements.forEach(element => {
 const sections = document.querySelectorAll('section');
 const navItems = document.querySelectorAll('.nav-links a');
 const navbar = document.querySelector('.navbar');
+const scrollProgress = document.getElementById('scrollProgress');
 
 window.addEventListener('scroll', () => {
     let current = '';
@@ -114,9 +115,79 @@ window.addEventListener('scroll', () => {
         navbar.style.background = 'rgba(11, 17, 33, 0.8)';
         navbar.style.boxShadow = 'none';
     }
+
+    // Scroll Progress Bar Update
+    if (scrollProgress) {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        scrollProgress.style.width = scrolled + "%";
+    }
 });
 
-// Form Submission via Formspree (Dihapus karena sekarang menggunakan WhatsApp)
+// Glow Card Hover Effect
+document.querySelectorAll('.glass').forEach(card => {
+    card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+    });
+});
+
+// Floating Orbs / Fireflies Background Canvas
+const pCanvas = document.getElementById('particlesCanvas');
+if (pCanvas) {
+    const pCtx = pCanvas.getContext('2d');
+    let particles = [];
+    
+    function resizeParticles() {
+        pCanvas.width = window.innerWidth;
+        pCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeParticles);
+    resizeParticles();
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * pCanvas.width;
+            this.y = Math.random() * pCanvas.height;
+            this.size = Math.random() * 2 + 0.5; // Ukuran kecil seperti debu bintang
+            this.speedX = Math.random() * 0.5 - 0.25;
+            this.speedY = Math.random() * 0.5 - 0.25;
+            this.opacity = Math.random() * 0.5 + 0.1;
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if (this.x > pCanvas.width) this.x = 0;
+            else if (this.x < 0) this.x = pCanvas.width;
+            if (this.y > pCanvas.height) this.y = 0;
+            else if (this.y < 0) this.y = pCanvas.height;
+        }
+        draw() {
+            pCtx.fillStyle = `rgba(139, 92, 246, ${this.opacity})`; // Warna ungu bercahaya
+            pCtx.beginPath();
+            pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            pCtx.fill();
+        }
+    }
+    
+    for (let i = 0; i < 70; i++) {
+        particles.push(new Particle());
+    }
+
+    function animateParticles() {
+        pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update();
+            particles[i].draw();
+        }
+        requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+}
 
 // Cursor Speedboat Wake Effect (V-Wake & Engine Foam)
 const colors = ['#ea4335', '#fbbc05', '#4285f4', '#34a853']; // Google colors
