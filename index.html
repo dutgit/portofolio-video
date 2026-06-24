@@ -22,6 +22,18 @@
 </head>
 
 <body>
+    <!-- Lanyard & ID Card Physics Interactive -->
+    <canvas id="lanyardCanvas"></canvas>
+    <div id="idCardContainer">
+        <div id="idCard" class="glass">
+            <div class="lanyard-hole"></div>
+            <img src="profile.jpg" alt="Chiloo Profile" class="id-photo">
+            <h4 class="id-name">Chiloo</h4>
+            <p class="id-role">Video Editor</p>
+            <div class="id-barcode"></div>
+        </div>
+    </div>
+
     <!-- Navbar -->
     <nav class="navbar">
         <a href="#home" class="logo">Porto<span>.</span></a>
@@ -210,6 +222,14 @@
     <footer>
         <p>&copy; 2026 Chiloo. Dibuat dengan <i class="fas fa-heart text-accent"></i></p>
     </footer>
+
+    <!-- Background Music Toggle -->
+    <div class="music-toggle" id="musicToggle" title="Play/Pause Background Music">
+        <i class="fas fa-music"></i>
+        <audio id="bgMusic" loop>
+            <source src="https://cdn.pixabay.com/audio/2022/02/07/audio_0af847cb2d.mp3" type="audio/mpeg">
+        </audio>
+    </div>
 
     <!-- Vanilla Tilt for 3D Interactive Cards -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
