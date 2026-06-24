@@ -116,43 +116,7 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Form Submission via Formspree
-const contactForm = document.getElementById('contact-form');
-if(contactForm) {
-    contactForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = e.target.querySelector('button');
-        const originalText = btn.textContent;
-        btn.textContent = 'Mengirim...';
-        
-        try {
-            const response = await fetch(e.target.action, {
-                method: 'POST',
-                body: new FormData(e.target),
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-            
-            if (response.ok) {
-                btn.textContent = 'Pesan Terkirim! ✅';
-                btn.style.background = '#10b981'; // Success color
-                e.target.reset();
-            } else {
-                btn.textContent = 'Gagal Mengirim ❌';
-                btn.style.background = '#ef4444'; // Error color
-            }
-        } catch (error) {
-            btn.textContent = 'Terjadi Kesalahan ❌';
-            btn.style.background = '#ef4444'; // Error color
-        }
-        
-        setTimeout(() => {
-            btn.textContent = originalText;
-            btn.style.background = '';
-        }, 3000);
-    });
-}
+// Form Submission via Formspree (Dihapus karena sekarang menggunakan WhatsApp)
 
 // Cursor Sprinkle Effect
 const colors = ['#ea4335', '#fbbc05', '#4285f4', '#34a853']; // Google colors
@@ -198,4 +162,14 @@ function createSprinkle(x, y) {
     setTimeout(() => {
         sprinkle.remove();
     }, duration * 1000);
+}
+
+// 3D Tilt Effect Initialization
+if (typeof VanillaTilt !== 'undefined') {
+    VanillaTilt.init(document.querySelectorAll(".stat-box, .skill-category"), {
+        max: 15,
+        speed: 400,
+        glare: true,
+        "max-glare": 0.2
+    });
 }

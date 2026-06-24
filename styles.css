@@ -38,11 +38,19 @@ h3 {
 h1 {
     font-size: clamp(2.5rem, 5vw, 4rem);
     margin-bottom: 0.5rem;
-    background: linear-gradient(135deg, #fff, #94a3b8);
+    background: linear-gradient(-45deg, #6366f1, #a855f7, #ec4899, #3b82f6);
+    background-size: 300% 300%;
+    animation: gradientBG 5s ease infinite;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     padding-bottom: 0.15em;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 h2 {
@@ -291,6 +299,13 @@ section {
     border: 3px solid var(--glass-border);
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
     background-color: var(--bg-color);
+    animation: float 6s ease-in-out infinite; /* Efek melayang */
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0px); }
 }
 
 .image-wrapper img {
