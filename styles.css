@@ -614,24 +614,220 @@ footer {
     }
 }
 
-/* Cursor Sprinkles */
-.sprinkle {
+/* Cursor Glowing Water Splash */
+.water-splash {
     position: fixed;
     border-radius: 50%;
     pointer-events: none;
     z-index: 9999;
-    animation: sprinkle-fade var(--duration, 1s) ease-out forwards;
-    box-shadow: 0 0 8px currentColor, 0 0 15px currentColor;
+    background: var(--color);
+    mix-blend-mode: screen; 
 }
 
-@keyframes sprinkle-fade {
+/* V-Wake (cipratan membelah samping) */
+.water-splash.v-wake {
+    width: 8px;
+    height: 8px;
+    margin-left: -4px;
+    margin-top: -4px;
+    box-shadow: 0 0 10px 2px var(--color), 0 0 20px var(--color);
+    animation: v-wake-anim var(--anim-duration, 1s) cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+/* Engine Wake (Buih mesin membuntuti di belakang lurus) */
+.water-splash.engine-wake {
+    width: 30px;
+    height: 30px;
+    margin-left: -15px;
+    margin-top: -15px;
+    background: var(--color);
+    filter: blur(8px); /* Blur tebal untuk buih ombak */
+    box-shadow: 0 0 20px var(--color);
+    animation: engine-wake-anim var(--anim-duration, 1.5s) ease-out forwards;
+}
+
+/* Semburan Depan (Bow Splash) */
+.water-splash.bow-splash {
+    width: 6px;
+    height: 6px;
+    margin-left: -3px;
+    margin-top: -3px;
+    box-shadow: 0 0 8px 2px var(--color), 0 0 15px var(--color);
+    animation: splash-anim var(--anim-duration, 1s) cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes v-wake-anim {
     0% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
+        transform: translate(0, 0) scale(1);
     }
-
     100% {
         opacity: 0;
-        transform: translate(calc(-50% + var(--tx, 0px)), calc(-50% + var(--ty, 0px))) scale(0);
+        transform: translate(var(--tx), var(--ty)) scale(1.5); /* Tetesan agak mengembang sebelum hilang */
     }
+}
+
+@keyframes engine-wake-anim {
+    0% {
+        opacity: 0.7;
+        transform: translate(0, 0) scale(0.5);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--tx), var(--ty)) scale(2.5); /* Buih mengembang lambat */
+    }
+}
+
+@keyframes splash-anim {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1.5);
+    }
+    100% {
+        opacity: 0;
+        /* Menciprat (menjauh) dan mengecil seperti tetesan air */
+        transform: translate(var(--tx), var(--ty)) scale(0); 
+    }
+}
+
+/* Interactive Lanyard & ID Card */
+#lanyardCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 998; /* Below ID Card */
+}
+
+#idCardContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    z-index: 999; /* Above canvas, below navbar */
+}
+
+#idCard {
+    position: absolute;
+    width: 200px;
+    height: 280px;
+    background: rgba(20, 30, 48, 0.85);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 0 15px rgba(255,255,255,0.05);
+    cursor: grab;
+    transform-origin: top center;
+    opacity: 0; /* Hidden until JS initializes */
+    transition: opacity 0.5s ease;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#idCard:active {
+    cursor: grabbing;
+}
+
+.lanyard-hole {
+    width: 40px;
+    height: 8px;
+    background: #0b1121;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.id-photo {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent);
+    margin-bottom: 10px;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+}
+
+.id-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.id-role {
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 15px;
+    background: rgba(99, 102, 241, 0.1);
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.id-barcode {
+    width: 100%;
+    height: 25px;
+    background-image: repeating-linear-gradient(
+        to right,
+        #fff 0,
+        #fff 2px,
+        transparent 2px,
+        transparent 5px,
+        #fff 5px,
+        #fff 7px,
+        transparent 7px,
+        transparent 11px
+    );
+    opacity: 0.4;
+    margin-top: auto;
+}
+
+/* Music Toggle */
+.music-toggle {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    color: var(--text-primary);
+}
+
+.music-toggle:hover {
+    transform: scale(1.1);
+    background: var(--accent);
+    box-shadow: var(--glow);
+}
+
+.music-toggle.playing {
+    color: var(--accent);
+    border-color: var(--accent);
+    animation: pulse-music 2s infinite;
+}
+
+@keyframes pulse-music {
+    0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
 }

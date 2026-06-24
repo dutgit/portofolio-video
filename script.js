@@ -118,50 +118,113 @@ window.addEventListener('scroll', () => {
 
 // Form Submission via Formspree (Dihapus karena sekarang menggunakan WhatsApp)
 
-// Cursor Sprinkle Effect
+// Cursor Speedboat Wake Effect (V-Wake & Engine Foam)
 const colors = ['#ea4335', '#fbbc05', '#4285f4', '#34a853']; // Google colors
 let throttleTimer;
+let prevX = 0;
+let prevY = 0;
+let lastAngle = 0;
+let lastSpeed = 0;
+let stopTimer; // Timer untuk mendeteksi kapan kursor berhenti
 
 document.addEventListener('mousemove', (e) => {
-    if (throttleTimer) return;
-    throttleTimer = setTimeout(() => { throttleTimer = null; }, 20);
+    clearTimeout(stopTimer);
+    
+    stopTimer = setTimeout(() => {
+        handleCursorStop(e.clientX, e.clientY);
+    }, 60);
 
-    createSprinkle(e.clientX, e.clientY);
+    if (throttleTimer) return;
+    throttleTimer = setTimeout(() => { throttleTimer = null; }, 15);
+
+    const x = e.clientX;
+    const y = e.clientY;
+
+    let dx = x - prevX;
+    let dy = y - prevY;
+    let speed = Math.sqrt(dx * dx + dy * dy);
+    let angle = Math.atan2(dy, dx);
+    
+    if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
+        angle = lastAngle;
+    } else {
+        lastAngle = angle;
+    }
+    
+    lastSpeed = speed; 
+
+    // Cipratan air menyebar sesuai kecepatan
+    const distance = Math.min(speed * 2 + 20, 100); 
+
+    // 1. Engine Wake (Buih mesin lurus di belakang kursor seperti di foto)
+    // Terlempar pelan ke belakang (angle + PI)
+    spawnWaterSplash(x, y, angle + Math.PI, speed * 0.5, 1500, 'engine-wake');
+
+    // 2. V-Shape Wake (Gelombang terbelah di sisi kiri dan kanan)
+    // Sudutnya mengarah ke samping-belakang (sekitar 145 derajat dari arah maju)
+    for (let i = 0; i < 2; i++) {
+        spawnWaterSplash(x, y, angle + Math.PI * 0.8, distance * (0.8 + Math.random()*0.4), 1200 + Math.random()*500, 'v-wake');
+        spawnWaterSplash(x, y, angle - Math.PI * 0.8, distance * (0.8 + Math.random()*0.4), 1200 + Math.random()*500, 'v-wake');
+    }
+
+    prevX = x;
+    prevY = y;
 });
 
-function createSprinkle(x, y) {
-    const sprinkle = document.createElement('div');
-    sprinkle.classList.add('sprinkle');
+function handleCursorStop(x, y) {
+    if (lastSpeed > 3) {
+        const distance = Math.min(lastSpeed * 5 + 50, 180);
+        
+        // Semburan air ke depan saat berhenti mendadak (seperti cipratan haluan)
+        for(let i=0; i<4; i++) {
+            setTimeout(() => {
+                spawnWaterSplash(x, y, lastAngle + (Math.random()-0.5)*0.2, distance * (0.4 + Math.random()*0.6), 800, 'bow');
+            }, i * 20);
+        }
+        
+        lastSpeed = 0; 
+    }
+}
+
+function spawnWaterSplash(x, y, driftAngle, distance, duration, type) {
+    const splash = document.createElement('div');
+    splash.classList.add('water-splash');
     
-    // Random size between 4px and 10px
-    const size = Math.random() * 6 + 4;
-    sprinkle.style.width = `${size}px`;
-    sprinkle.style.height = `${size}px`;
+    if (type === 'bow') splash.classList.add('bow-splash');
+    if (type === 'engine-wake') splash.classList.add('engine-wake');
+    if (type === 'v-wake') splash.classList.add('v-wake');
     
-    // Random color
     const color = colors[Math.floor(Math.random() * colors.length)];
-    sprinkle.style.backgroundColor = color;
-    sprinkle.style.color = color;
+    splash.style.setProperty('--color', color);
     
-    // Position
-    sprinkle.style.left = `${x}px`;
-    sprinkle.style.top = `${y}px`;
+    let startX = x;
+    let startY = y;
     
-    // Random movement direction
-    const tx = (Math.random() - 0.5) * 100;
-    const ty = (Math.random() - 0.5) * 100;
-    sprinkle.style.setProperty('--tx', `${tx}px`);
-    sprinkle.style.setProperty('--ty', `${ty}px`);
+    if (type === 'bow') {
+        startX += Math.cos(driftAngle) * 10;
+        startY += Math.sin(driftAngle) * 10;
+    }
+    // Buih mesin berawal sedikit di belakang kursor
+    if (type === 'engine-wake') {
+        startX += Math.cos(driftAngle) * 5;
+        startY += Math.sin(driftAngle) * 5;
+    }
     
-    // Random duration
-    const duration = Math.random() * 0.5 + 0.5;
-    sprinkle.style.setProperty('--duration', `${duration}s`);
+    splash.style.left = `${startX}px`;
+    splash.style.top = `${startY}px`;
     
-    document.body.appendChild(sprinkle);
+    const tx = Math.cos(driftAngle) * distance;
+    const ty = Math.sin(driftAngle) * distance;
+    
+    splash.style.setProperty('--tx', `${tx}px`);
+    splash.style.setProperty('--ty', `${ty}px`);
+    splash.style.setProperty('--anim-duration', `${duration}ms`);
+    
+    document.body.appendChild(splash);
     
     setTimeout(() => {
-        sprinkle.remove();
-    }, duration * 1000);
+        splash.remove();
+    }, duration);
 }
 
 // 3D Tilt Effect Initialization
@@ -172,4 +235,223 @@ if (typeof VanillaTilt !== 'undefined') {
         glare: true,
         "max-glare": 0.2
     });
+}
+
+// Background Music Toggle
+const musicToggle = document.getElementById('musicToggle');
+const bgMusic = document.getElementById('bgMusic');
+let isMusicPlaying = false;
+
+if (musicToggle && bgMusic) {
+    // Set initial volume
+    bgMusic.volume = 0.3;
+
+    musicToggle.addEventListener('click', () => {
+        if (isMusicPlaying) {
+            bgMusic.pause();
+            musicToggle.classList.remove('playing');
+        } else {
+            bgMusic.play();
+            musicToggle.classList.add('playing');
+        }
+        isMusicPlaying = !isMusicPlaying;
+    });
+}
+
+// --- Interactive Lanyard & ID Card Physics ---
+const canvas = document.getElementById('lanyardCanvas');
+const ctx = canvas ? canvas.getContext('2d') : null;
+const idCard = document.getElementById('idCard');
+
+if (canvas && idCard) {
+    // Canvas Resize
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Setup Physics
+    const points = [];
+    const numPoints = 10;
+    const segmentLength = 20;
+    const gravity = 0.6;
+    const friction = 0.92;
+    const bounce = 0.5;
+
+    let anchorX = window.innerWidth - Math.min(250, window.innerWidth * 0.2); 
+    let anchorY = -10; // Slightly above screen
+
+    for (let i = 0; i < numPoints; i++) {
+        points.push({
+            x: anchorX,
+            y: anchorY + i * segmentLength,
+            oldX: anchorX,
+            oldY: anchorY + i * segmentLength,
+            pinned: i === 0
+        });
+    }
+
+    // Interaction State
+    let isDragging = false;
+    let dragPoint = null;
+    let mouseX = 0;
+    let mouseY = 0;
+    let mouseOffsetX = 0;
+    let mouseOffsetY = 0;
+    let currentCardAngle = 0; // Untuk smoothing rotasi kartu
+
+    idCard.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        dragPoint = points[numPoints - 1]; // Attach to the last point
+        
+        const rect = idCard.getBoundingClientRect();
+        const attachX = rect.left + rect.width / 2;
+        const attachY = rect.top;
+        
+        mouseOffsetX = e.clientX - attachX;
+        mouseOffsetY = e.clientY - attachY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', () => {
+        isDragging = false;
+        dragPoint = null;
+    });
+
+    // Touch Support
+    idCard.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        dragPoint = points[numPoints - 1];
+        
+        const touch = e.touches[0];
+        const rect = idCard.getBoundingClientRect();
+        const attachX = rect.left + rect.width / 2;
+        const attachY = rect.top;
+        
+        mouseOffsetX = touch.clientX - attachX;
+        mouseOffsetY = touch.clientY - attachY;
+    }, {passive: true});
+
+    window.addEventListener('touchmove', (e) => {
+        const touch = e.touches[0];
+        mouseX = touch.clientX;
+        mouseY = touch.clientY;
+    }, {passive: true});
+
+    window.addEventListener('touchend', () => {
+        isDragging = false;
+        dragPoint = null;
+    });
+
+    function updatePhysics() {
+        // Responsively update anchor position
+        anchorX = window.innerWidth - Math.min(250, window.innerWidth * 0.2);
+        points[0].x = anchorX;
+        points[0].y = anchorY;
+
+        for (let i = 0; i < numPoints; i++) {
+            const p = points[i];
+            if (p.pinned) continue;
+
+            const vx = (p.x - p.oldX) * friction;
+            const vy = (p.y - p.oldY) * friction;
+
+            p.oldX = p.x;
+            p.oldY = p.y;
+
+            p.x += vx;
+            p.y += vy + gravity;
+
+            // Follow mouse if dragging
+            if (isDragging && dragPoint === p) {
+                p.x = mouseX - mouseOffsetX;
+                p.y = mouseY - mouseOffsetY;
+            }
+
+            // Screen Bounds (Optional, keeps rope from going out of bounds)
+            if (p.x > window.innerWidth) {
+                p.x = window.innerWidth;
+                p.oldX = p.x + vx * bounce;
+            } else if (p.x < 0) {
+                p.x = 0;
+                p.oldX = p.x + vx * bounce;
+            }
+        }
+
+        // Verlet Constraints - Iterasi diperbanyak agar tali lebih kuat dan tidak nge-glitch/putus
+        for (let i = 0; i < 35; i++) {
+            for (let j = 0; j < numPoints - 1; j++) {
+                const p1 = points[j];
+                const p2 = points[j + 1];
+
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                const distance = Math.max(Math.sqrt(dx * dx + dy * dy), 0.001); // Cegah pembagian dengan 0
+                const difference = segmentLength - distance;
+                const percent = difference / distance / 2;
+                const offsetX = dx * percent;
+                const offsetY = dy * percent;
+
+                if (!p1.pinned) {
+                    p1.x -= offsetX;
+                    p1.y -= offsetY;
+                }
+                if (!p2.pinned && !(isDragging && dragPoint === p2)) {
+                    p2.x += offsetX;
+                    p2.y += offsetY;
+                }
+            }
+        }
+    }
+
+    function drawLanyard() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Lanyard Rope
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < numPoints; i++) {
+            ctx.lineTo(points[i].x, points[i].y);
+        }
+        ctx.strokeStyle = '#6366f1'; 
+        ctx.lineWidth = 5;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.stroke();
+
+        // Posisi DOM ID Card
+        const lastPoint = points[numPoints - 1];
+        const prevPoint = points[numPoints - 2];
+        
+        // Menghitung rotasi dari tali terakhir
+        const dx = lastPoint.x - prevPoint.x;
+        const dy = lastPoint.y - prevPoint.y;
+        let targetAngle = Math.atan2(dy, dx) - Math.PI / 2; 
+        
+        // Batasi sudut ekstrem tapi tanpa hard snapping
+        if (targetAngle > 1.2) targetAngle = 1.2;
+        if (targetAngle < -1.2) targetAngle = -1.2;
+
+        // Smoothly interpolate angle (Lerp) agar ayunan kartu terasa berbobot
+        currentCardAngle += (targetAngle - currentCardAngle) * 0.15;
+
+        idCard.style.opacity = 1; 
+        idCard.style.left = `${lastPoint.x - idCard.offsetWidth / 2}px`;
+        idCard.style.top = `${lastPoint.y}px`;
+        idCard.style.transform = `rotate(${currentCardAngle}rad)`;
+    }
+
+    function animateLanyard() {
+        updatePhysics();
+        drawLanyard();
+        requestAnimationFrame(animateLanyard);
+    }
+
+    animateLanyard();
 }
