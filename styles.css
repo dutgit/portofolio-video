@@ -540,6 +540,10 @@ footer {
     .about-content {
         grid-template-columns: 1fr;
     }
+
+    #lanyardCanvas, #idCardContainer {
+        display: none !important;
+    }
 }
 
 @media (max-width: 768px) {

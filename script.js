@@ -486,7 +486,7 @@ if (canvas && idCard) {
         if (window.innerWidth <= 768) {
             anchorX = window.innerWidth - 40; // Di mobile, geser lebih ke kanan (menepi)
         } else {
-            anchorX = window.innerWidth - Math.min(250, window.innerWidth * 0.2);
+            anchorX = window.innerWidth - 130; // Geser jauh ke kanan agar tidak menghalangi
         }
         points[0].x = anchorX;
         points[0].y = anchorY;
