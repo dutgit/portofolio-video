@@ -198,23 +198,39 @@ let lastAngle = 0;
 let lastSpeed = 0;
 let stopTimer; // Timer untuk mendeteksi kapan kursor berhenti
 
-document.addEventListener('mousemove', (e) => {
+function handlePointerMove(e) {
     clearTimeout(stopTimer);
     
+    let clientX, clientY;
+    if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+    } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+    }
+
     stopTimer = setTimeout(() => {
-        handleCursorStop(e.clientX, e.clientY);
+        handleCursorStop(clientX, clientY);
     }, 60);
 
     if (throttleTimer) return;
     throttleTimer = setTimeout(() => { throttleTimer = null; }, 15);
 
-    const x = e.clientX;
-    const y = e.clientY;
+    const x = clientX;
+    const y = clientY;
 
     let dx = x - prevX;
     let dy = y - prevY;
     let speed = Math.sqrt(dx * dx + dy * dy);
     let angle = Math.atan2(dy, dx);
+    
+    // Supaya saat baru disentuh pertama kali, tidak langsung terpental jauh karena jarak prevX dan X jauh
+    if (speed > 300) {
+        prevX = x;
+        prevY = y;
+        return;
+    }
     
     if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
         angle = lastAngle;
@@ -224,15 +240,10 @@ document.addEventListener('mousemove', (e) => {
     
     lastSpeed = speed; 
 
-    // Cipratan air menyebar sesuai kecepatan
     const distance = Math.min(speed * 2 + 20, 100); 
 
-    // 1. Engine Wake (Buih mesin lurus di belakang kursor seperti di foto)
-    // Terlempar pelan ke belakang (angle + PI)
     spawnWaterSplash(x, y, angle + Math.PI, speed * 0.5, 1500, 'engine-wake');
 
-    // 2. V-Shape Wake (Gelombang terbelah di sisi kiri dan kanan)
-    // Sudutnya mengarah ke samping-belakang (sekitar 145 derajat dari arah maju)
     for (let i = 0; i < 2; i++) {
         spawnWaterSplash(x, y, angle + Math.PI * 0.8, distance * (0.8 + Math.random()*0.4), 1200 + Math.random()*500, 'v-wake');
         spawnWaterSplash(x, y, angle - Math.PI * 0.8, distance * (0.8 + Math.random()*0.4), 1200 + Math.random()*500, 'v-wake');
@@ -240,7 +251,26 @@ document.addEventListener('mousemove', (e) => {
 
     prevX = x;
     prevY = y;
-});
+}
+
+document.addEventListener('mousemove', handlePointerMove);
+document.addEventListener('touchmove', handlePointerMove, {passive: true});
+
+// Efek cipratan saat layar ditap/disentuh pertama kali
+document.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 0) {
+        const x = e.touches[0].clientX;
+        const y = e.touches[0].clientY;
+        prevX = x;
+        prevY = y;
+        
+        // Spawn beberapa cipratan melingkar
+        for(let i = 0; i < 5; i++) {
+            const randomAngle = Math.random() * Math.PI * 2;
+            spawnWaterSplash(x, y, randomAngle, 40 + Math.random()*40, 1000, 'bow');
+        }
+    }
+}, {passive: true});
 
 function handleCursorStop(x, y) {
     if (lastSpeed > 3) {
@@ -315,17 +345,44 @@ let isMusicPlaying = false;
 
 if (musicToggle && bgMusic) {
     // Set initial volume
-    bgMusic.volume = 0.3;
+    bgMusic.volume = 0.4; // 40% adalah volume ideal untuk background music
 
-    musicToggle.addEventListener('click', () => {
+    const playMusic = () => {
+        const playPromise = bgMusic.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                isMusicPlaying = true;
+                musicToggle.classList.add('playing');
+            }).catch(error => {
+                console.log("Autoplay dicegah oleh browser, menunggu interaksi user...");
+            });
+        }
+    };
+
+    // Coba putar otomatis
+    playMusic();
+
+    // Jika diblokir, putar saat interaksi pertama
+    const initialPlay = () => {
+        if (!isMusicPlaying) {
+            playMusic();
+        }
+        document.removeEventListener('click', initialPlay);
+        document.removeEventListener('touchstart', initialPlay);
+    };
+    
+    document.addEventListener('click', initialPlay);
+    document.addEventListener('touchstart', initialPlay, {passive: true});
+
+    musicToggle.addEventListener('click', (e) => {
+        e.stopPropagation(); // Cegah event trigger ke document
         if (isMusicPlaying) {
             bgMusic.pause();
             musicToggle.classList.remove('playing');
+            isMusicPlaying = false;
         } else {
-            bgMusic.play();
-            musicToggle.classList.add('playing');
+            playMusic();
         }
-        isMusicPlaying = !isMusicPlaying;
     });
 }
 
@@ -422,7 +479,11 @@ if (canvas && idCard) {
 
     function updatePhysics() {
         // Responsively update anchor position
-        anchorX = window.innerWidth - Math.min(250, window.innerWidth * 0.2);
+        if (window.innerWidth <= 768) {
+            anchorX = window.innerWidth - 40; // Di mobile, geser lebih ke kanan (menepi)
+        } else {
+            anchorX = window.innerWidth - Math.min(250, window.innerWidth * 0.2);
+        }
         points[0].x = anchorX;
         points[0].y = anchorY;
 
@@ -512,10 +573,13 @@ if (canvas && idCard) {
         // Smoothly interpolate angle (Lerp) agar ayunan kartu terasa berbobot
         currentCardAngle += (targetAngle - currentCardAngle) * 0.15;
 
+        // Skala kartu menjadi 60% jika di mobile agar tidak menutupi layar
+        const scaleCard = window.innerWidth <= 768 ? 0.6 : 1;
+
         idCard.style.opacity = 1; 
         idCard.style.left = `${lastPoint.x - idCard.offsetWidth / 2}px`;
         idCard.style.top = `${lastPoint.y}px`;
-        idCard.style.transform = `rotate(${currentCardAngle}rad)`;
+        idCard.style.transform = `rotate(${currentCardAngle}rad) scale(${scaleCard})`;
     }
 
     function animateLanyard() {

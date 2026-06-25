@@ -10,10 +10,12 @@
     <link rel="icon" type="image/png" href="logo.png">
 
     <!-- Meta Tags untuk Sosial Media (Facebook, WA, dll) -->
-    <meta property="og:title" content="Portofolio | [Nama Anda]">
+    <meta property="og:title" content="Portofolio | ChillOutbroh">
     <meta property="og:description"
-        content="Lihat portofolio dan proyek terbaru dari [Nama Anda], seorang Pengembang Web.">
-    <meta property="og:image" content="profile.jpg"> <!-- Gambar ini akan muncul saat link dibagikan -->
+        content="Lihat portofolio dan proyek terbaru dari ChillOutbroh, seorang Video Editor.">
+    <meta property="og:image" content="https://dutgit.github.io/portofolio-video/profile.jpg">
+    <!-- Gambar ini akan muncul saat link dibagikan -->
+    <meta property="og:url" content="https://dutgit.github.io/portofolio-video/">
     <meta property="og:type" content="website">
 
     <link rel="stylesheet" href="styles.css?v=3">
@@ -24,7 +26,7 @@
 <body>
     <div id="scrollProgress" class="scroll-progress"></div>
     <canvas id="particlesCanvas"></canvas>
-    
+
     <!-- Lanyard & ID Card Physics Interactive -->
     <canvas id="lanyardCanvas"></canvas>
     <div id="idCardContainer">
@@ -54,6 +56,7 @@
 
     <!-- Hero Section -->
     <section id="home" class="hero">
+        <div class="hero-bg-image fade-in"></div>
         <div class="hero-content fade-in">
             <h3>Halo, nama saya</h3>
             <h1 class="glitch-text" data-text="Chiloo">Chiloo</h1>
@@ -74,13 +77,6 @@
             </div>
             <a href="#contact" class="btn primary-btn">Hubungi Saya</a>
         </div>
-        <div class="hero-image fade-in">
-            <!-- TEMPAT FOTO ANDA: Ganti atribut src pada tag img di bawah ini dengan nama file foto Anda -->
-            <div class="image-wrapper">
-                <img src="profile.jpg" alt="Foto Profil" id="profile-img">
-                <div class="glow-effect"></div>
-            </div>
-        </div>
     </section>
 
     <!-- About Section -->
@@ -88,11 +84,11 @@
         <h2 class="section-title fade-in">Tentang Saya</h2>
         <div class="about-content">
             <div class="about-text fade-in">
-                <p>Saya adalah seorang Video Editor yang bersemangat dalam dunia visual dan penceritaan (storytelling).
-                    Saya
-                    senang mengubah cuplikan video mentah menjadi sebuah mahakarya visual yang menarik.</p>
+                <p>Halo Semuanya Perkenalkan nama saya Fachrul, bisa juga dipanggil Chiloo, aku adalah seorang Video
+                    Editor yang bersemangat dalam dunia visual dan penceritaan (storytelling).
+                    Aku senang mengubah cuplikan video mentah menjadi sebuah mahakarya visual yang menarik.</p>
                 <p>Dengan pengalaman mengedit berbagai jenis video khususnya untuk platform vertikal seperti TikTok,
-                    saya selalu berusaha untuk mengikuti
+                    aku selalu berusaha untuk mengikuti
                     tren transisi terbaru, efek visual, dan gaya editing yang dinamis.</p>
             </div>
             <div class="about-stats fade-in">
@@ -121,7 +117,7 @@
                 <div class="skill-tags">
                     <span>CapCut (PC & Mobile)</span>
                     <span>Adobe Premiere Pro</span>
-                    <span>After Effects</span>
+                    <span>Alight Motion (Mobile)</span>
                     <span>DaVinci Resolve</span>
                 </div>
             </div>
@@ -230,7 +226,7 @@
     <div class="music-toggle" id="musicToggle" title="Play/Pause Background Music">
         <i class="fas fa-music"></i>
         <audio id="bgMusic" loop>
-            <source src="https://cdn.pixabay.com/audio/2022/02/07/audio_0af847cb2d.mp3" type="audio/mpeg">
+            <source src="lofi-chill.mp3" type="audio/mpeg">
         </audio>
     </div>
 
