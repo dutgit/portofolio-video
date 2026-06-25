@@ -345,7 +345,7 @@ let isMusicPlaying = false;
 
 if (musicToggle && bgMusic) {
     // Set initial volume
-    bgMusic.volume = 0.4; // 40% adalah volume ideal untuk background music
+    bgMusic.volume = 0.8; // Diubah ke 80% agar terdengar di speaker HP
 
     const playMusic = () => {
         const playPromise = bgMusic.play();
@@ -369,10 +369,14 @@ if (musicToggle && bgMusic) {
         }
         document.removeEventListener('click', initialPlay);
         document.removeEventListener('touchstart', initialPlay);
+        document.removeEventListener('touchend', initialPlay);
+        document.removeEventListener('scroll', initialPlay);
     };
     
     document.addEventListener('click', initialPlay);
     document.addEventListener('touchstart', initialPlay, {passive: true});
+    document.addEventListener('touchend', initialPlay, {passive: true});
+    document.addEventListener('scroll', initialPlay, {passive: true});
 
     musicToggle.addEventListener('click', (e) => {
         e.stopPropagation(); // Cegah event trigger ke document

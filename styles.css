@@ -528,9 +528,9 @@ footer {
         height: 60%;
         top: 0;
         right: 0;
-        -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 50%);
-        mask-image: linear-gradient(to bottom, transparent 0%, black 50%);
-        opacity: 0.3;
+        -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+        mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+        opacity: 0.15;
     }
 
     .social-icons {
@@ -887,6 +887,7 @@ footer {
 .music-toggle:hover {
     transform: scale(1.1);
     background: var(--accent);
+    color: white;
     box-shadow: var(--glow);
 }
 
@@ -894,6 +895,10 @@ footer {
     color: var(--accent);
     border-color: var(--accent);
     animation: pulse-music 2s infinite;
+}
+
+.music-toggle.playing:hover {
+    color: white;
 }
 
 @keyframes pulse-music {
