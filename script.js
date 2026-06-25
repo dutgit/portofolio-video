@@ -347,36 +347,40 @@ if (musicToggle && bgMusic) {
     // Set initial volume
     bgMusic.volume = 0.8; // Diubah ke 80% agar terdengar di speaker HP
 
+    const removeListeners = () => {
+        document.removeEventListener('click', initialPlay);
+        document.removeEventListener('touchstart', initialPlay);
+        document.removeEventListener('touchend', initialPlay);
+        document.removeEventListener('keydown', initialPlay);
+    };
+
     const playMusic = () => {
         const playPromise = bgMusic.play();
         if (playPromise !== undefined) {
             playPromise.then(() => {
                 isMusicPlaying = true;
                 musicToggle.classList.add('playing');
+                removeListeners();
             }).catch(error => {
-                console.log("Autoplay dicegah oleh browser, menunggu interaksi user...");
+                console.log("Autoplay dicegah oleh browser, menunggu interaksi user yang sah...");
             });
         }
     };
 
-    // Coba putar otomatis
-    playMusic();
-
-    // Jika diblokir, putar saat interaksi pertama
     const initialPlay = () => {
         if (!isMusicPlaying) {
             playMusic();
         }
-        document.removeEventListener('click', initialPlay);
-        document.removeEventListener('touchstart', initialPlay);
-        document.removeEventListener('touchend', initialPlay);
-        document.removeEventListener('scroll', initialPlay);
     };
     
+    // Pasang listener pada interaksi yang diizinkan browser
     document.addEventListener('click', initialPlay);
     document.addEventListener('touchstart', initialPlay, {passive: true});
     document.addEventListener('touchend', initialPlay, {passive: true});
-    document.addEventListener('scroll', initialPlay, {passive: true});
+    document.addEventListener('keydown', initialPlay, {passive: true});
+    
+    // Coba putar otomatis saat halaman dimuat
+    playMusic();
 
     musicToggle.addEventListener('click', (e) => {
         e.stopPropagation(); // Cegah event trigger ke document
@@ -594,3 +598,111 @@ if (canvas && idCard) {
 
     animateLanyard();
 }
+
+// --- Interactive UFO Mini-game ---
+const explosionSound = document.getElementById('explosionSound');
+let activeUFOs = 0;
+const maxUFOs = 4; // Maksimal 4 UFO bersamaan agar tidak lag
+
+function spawnUFO() {
+    if (activeUFOs >= maxUFOs) return;
+
+    const ufo = document.createElement('div');
+    ufo.className = 'ufo';
+    ufo.innerText = ''; // UFO dibuat lewat CSS murni (titik jauh)
+
+    // Posisi awal acak (kiri atau kanan)
+    const startFromLeft = Math.random() > 0.5;
+    const startY = Math.random() * (window.innerHeight - 150) + 50; // Hindari navbar dan footer
+    const duration = 15000 + Math.random() * 10000; // 15-25 detik agar terlihat sangat jauh dan lambat
+
+    ufo.style.top = `${startY}px`;
+    
+    if (startFromLeft) {
+        ufo.style.left = '-100px';
+    } else {
+        ufo.style.right = '-100px';
+    }
+
+    document.body.appendChild(ufo);
+    activeUFOs++;
+
+    let startTime = null;
+    let isExploded = false;
+
+    // Animasi pergerakan UFO
+    function animateUFO(timestamp) {
+        if (isExploded) return;
+        if (!startTime) startTime = timestamp;
+        const progress = (timestamp - startTime) / duration;
+
+        if (progress >= 1) {
+            // UFO telah melintasi layar, hapus
+            ufo.remove();
+            activeUFOs--;
+            return;
+        }
+
+        const currentX = progress * (window.innerWidth + 200);
+        if (startFromLeft) {
+            ufo.style.left = `${-100 + currentX}px`;
+        } else {
+            ufo.style.right = `${-100 + currentX}px`;
+        }
+
+        // Efek ayunan (naik turun secara perlahan)
+        const wiggle = Math.sin(progress * Math.PI * 6) * 15; 
+        ufo.style.transform = `translateY(${wiggle}px)`;
+
+        requestAnimationFrame(animateUFO);
+    }
+
+    requestAnimationFrame(animateUFO);
+
+    // Fungsi saat UFO diklik/ditap (Meledak)
+    const explode = (e) => {
+        if (isExploded) return;
+        e.stopPropagation();
+        e.preventDefault();
+        isExploded = true;
+        
+        // Putar suara ledakan jika file audio ada
+        if (explosionSound) {
+            explosionSound.currentTime = 0; // Reset ke awal
+            explosionSound.volume = 0.5;
+            explosionSound.play().catch(() => {
+                // Abaikan error jika file boom.mp3 belum ada
+            });
+        }
+
+        // Buat elemen ledakan 💥
+        const rect = ufo.getBoundingClientRect();
+        const explosion = document.createElement('div');
+        explosion.className = 'ufo-explosion';
+        explosion.innerText = ''; // Ledakan berupa animasi CSS
+        explosion.style.left = `${rect.left}px`;
+        explosion.style.top = `${rect.top}px`;
+        document.body.appendChild(explosion);
+
+        // Hapus elemen UFO
+        ufo.remove();
+        activeUFOs--;
+
+        // Hapus efek ledakan setelah animasi selesai
+        setTimeout(() => {
+            explosion.remove();
+        }, 600);
+    };
+
+    // Pasang listener klik dan sentuh
+    ufo.addEventListener('mousedown', explode);
+    ufo.addEventListener('touchstart', explode, {passive: false});
+}
+
+// Coba spawn UFO secara acak setiap 2.5 detik
+setInterval(() => {
+    // Peluang 35% untuk spawn (jika di bawah limit maxUFOs)
+    if (Math.random() < 0.35) {
+        spawnUFO();
+    }
+}, 2500);
